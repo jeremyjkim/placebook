@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
 import '../../core/model/place.dart';
 import '../../core/repo/place_repository.dart';
@@ -46,17 +46,16 @@ class PlaceDetailScreen extends ConsumerWidget {
             children: [
               SizedBox(
                 height: 320,
-                child: GoogleMap(
-                  initialCameraPosition: CameraPosition(target: position, zoom: 15),
-                  markers: {
+                child: KakaoMap(
+                  center: position,
+                  zoomLevel: 4,
+                  markers: [
                     Marker(
-                      markerId: const MarkerId('place'),
-                      position: position,
-                      infoWindow: InfoWindow(title: place.note, snippet: place.emoji),
+                      markerId: 'place',
+                      latLng: position,
+                      infoWindowContent: '${place.emoji} ${place.note}',
                     ),
-                  },
-                  myLocationButtonEnabled: false,
-                  zoomControlsEnabled: false,
+                  ],
                 ),
               ),
               Padding(
