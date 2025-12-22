@@ -2,27 +2,40 @@ name: placebook
 description: A simple personal app to save places on a map.
 publish_to: 'none'
 version: 1.0.0+1
+
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: ^3.3.0
 
 dependencies:
   flutter:
     sdk: flutter
+
+  # State / Routing
   flutter_riverpod: ^2.5.1
   go_router: ^14.2.1
+
+  # Map & Location
   google_maps_flutter: ^2.6.1
   geolocator: ^12.0.0
-  isar: ^4.0.0
-  isar_flutter_libs: ^4.0.0
+
+  # Local DB
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
   path_provider: ^2.1.4
+
+  # UI
   google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
   flutter_lints: ^3.0.2
   build_runner: ^2.4.9
-  isar_generator: ^4.0.0
+  isar_generator: ^3.1.0+1
 
 flutter:
   uses-material-design: true
+dependency_overrides:
+  isar_flutter_libs:
+    path: packages/isar_flutter_libs
