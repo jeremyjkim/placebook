@@ -47,21 +47,15 @@ class PlaceDetailScreen extends ConsumerWidget {
               SizedBox(
                 height: 320,
                 child: KakaoMap(
-                  initialCameraPosition: CameraPosition(
-                    target: position,
-                    level: 3,
-                  ),
-                  onMapCreated: (controller) async {
-                    await controller.addMarker(
-                      Marker(
-                        markerId: 'place',
-                        latLng: position,
-                        infoWindowContent: '${place.emoji} ${place.note}',
-                      ),
-                    );
-                    await controller.setCenter(position);
-                    await controller.setLevel(3);
-                  },
+                  center: position,
+                  zoomLevel: 4,
+                  markers: [
+                    Marker(
+                      markerId: 'place',
+                      latLng: position,
+                      infoWindowContent: '${place.emoji} ${place.note}',
+                    ),
+                  ],
                 ),
               ),
               Padding(

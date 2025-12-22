@@ -6,15 +6,15 @@ A minimal Flutter app to save personal spots on a map. Focuses on speed and simp
 - Flutter (Material 3)
 - Riverpod for state management
 - GoRouter for navigation
-- Google Maps (google_maps_flutter)
+- Kakao Maps (kakao_map_plugin)
 - Geolocator for device location
 - Isar for local storage
 
-## Google Maps API key
-1. Create an API key in the Google Cloud console with Maps SDK for Android/iOS enabled.
-2. Add the key to your platform configs:
-   - **Android:** set the value for `com.google.android.geo.API_KEY` in `android/app/src/main/AndroidManifest.xml`.
-   - **iOS:** add `io.flutter.embedded_views_preview` and your key in `ios/Runner/AppDelegate.swift` or `Info.plist` under `GMSApiKey`.
+## Kakao Maps API key
+1. Create a Kakao JavaScript key in the Kakao Developers console.
+2. Add the key to your platform configs so the Kakao SDK can initialize:
+   - **Android:** set the value for `com.kakao.sdk.AppKey` in `android/app/src/main/AndroidManifest.xml`.
+   - **iOS:** set `KAKAO_APP_KEY` in your `Info.plist`.
 3. Rebuild the app after updating the keys.
 
 ## Running the app

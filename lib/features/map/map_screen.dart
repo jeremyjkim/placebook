@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
 import '../../core/model/place.dart';
 import '../../core/repo/place_repository.dart';
@@ -21,7 +21,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   String _selectedEmoji = '📍';
   Position? _currentPosition;
   LatLng? _tempPin;
-  GoogleMapController? _mapController;
+  KakaoMapController? _mapController;
 
   @override
   void initState() {
@@ -44,12 +44,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         _currentPosition = position;
       });
       if (_mapController != null) {
-        _mapController!.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            LatLng(position.latitude, position.longitude),
-            15,
-          ),
+        _mapController!.setCenter(
+          LatLng(position.latitude, position.longitude),
         );
+        _mapController!.setLevel(4);
       }
     } catch (e) {
       if (!mounted) return;
@@ -217,25 +215,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       ),
       body: position == null
           ? const Center(child: CircularProgressIndicator())
-          : GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: LatLng(position.latitude, position.longitude),
-                zoom: 14,
-              ),
-              myLocationButtonEnabled: true,
-              myLocationEnabled: true,
+          : KakaoMap(
+              center: LatLng(position.latitude, position.longitude),
+              zoomLevel: 4,
               onMapCreated: (controller) {
                 _mapController = controller;
               },
-              markers: {
+              markers: [
                 if (_tempPin != null)
                   Marker(
-                    markerId: const MarkerId('temp'),
-                    position: _tempPin!,
-                    infoWindow: const InfoWindow(title: 'New place'),
+                    markerId: 'temp',
+                    latLng: _tempPin!,
+                    infoWindowContent: 'New place',
                   ),
-              },
-              onLongPress: _onLongPress,
+              ],
+              onMapLongTap: _onLongPress,
             ),
       // TODO: Add app tutorial for new users.
     );
