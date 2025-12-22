@@ -217,7 +217,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ? const Center(child: CircularProgressIndicator())
           : KakaoMap(
               center: LatLng(position.latitude, position.longitude),
-              zoomLevel: 4,
+              level: 4,
               onMapCreated: (controller) {
                 _mapController = controller;
               },

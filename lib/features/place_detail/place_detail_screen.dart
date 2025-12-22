@@ -48,7 +48,7 @@ class PlaceDetailScreen extends ConsumerWidget {
                 height: 320,
                 child: KakaoMap(
                   center: position,
-                  zoomLevel: 4,
+                  level: 4,
                   markers: [
                     Marker(
                       markerId: 'place',
