@@ -1,12 +1,69 @@
-node_modules
-.dist
-.vscode
-.idea
-.DS_Store
+# =========================
+# Miscellaneous
+# =========================
+*.class
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-dist
-.env
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# =========================
+# IntelliJ / IDE
+# =========================
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+
+# =========================
+# Flutter / Dart / Pub
+# =========================
+.metadata
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Generated files (codegen)
+**/*.g.dart
+
+# Dependency lock (Flutter app)
+pubspec.lock
+
+# =========================
+# Local workaround packages
+# =========================
+packages/
+
+# =========================
+# Android (local-only for now)
+# =========================
+android/
+
+# Android Studio build outputs
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# =========================
+# iOS
+# =========================
+**/ios/Flutter/.last_build_id
+
+# =========================
+# Symbolication / Obfuscation
+# =========================
+app.*.symbols
+app.*.map.json
