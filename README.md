@@ -1,44 +1,47 @@
-# Placebook (web)
+# Placebook
 
-Map-centric place bookmarking web app built with Vite + React + TypeScript. Inspired by Journi and designed to be mobile-first with Kakao Map as the map provider.
-
-## Features
-- Tap the Kakao map to drop a temporary marker, then add details via a bottom-sheet flow.
-- Save places with name, memo, and emoji/icon.
-- Card-style saved list with selection, deletion, and map centering.
-- Selected markers highlight on the map; tapping list items pans the view.
-- Local storage (Zustand + persist) for offline-friendly usage.
-- PWA-ready structure and Tailwind-based modern UI.
-
-## Getting started
-1. Install dependencies
-   ```bash
-   npm install
-   ```
-2. Set your Kakao Map JavaScript key in a `.env` file:
-   ```bash
-   VITE_KAKAO_MAP_KEY=your_kakao_js_key
-   ```
-3. Run the app
-   ```bash
-   npm run dev
-   ```
+A minimal Flutter app to save personal spots on a map. Focuses on speed and simplicity.
 
 ## Tech stack
-- Vite + React + TypeScript
-- Tailwind CSS for styling
-- Zustand for state management
-- Kakao Maps JavaScript SDK (loaded dynamically)
+- Flutter (Material 3)
+- Riverpod for state management
+- GoRouter for navigation
+- Kakao Maps (kakao_map_plugin)
+- Geolocator for device location
+- Isar for local storage
+
+## Kakao Maps API key
+1. Create a Kakao JavaScript key in the Kakao Developers console.
+2. Add the key to your platform configs so the Kakao SDK can initialize:
+   - **Android:** set the value for `com.kakao.sdk.AppKey` in `android/app/src/main/AndroidManifest.xml`.
+   - **iOS:** set `KAKAO_APP_KEY` in your `Info.plist`.
+3. Rebuild the app after updating the keys.
+
+## Running the app
+1. Install Flutter (latest stable) and set up an emulator or device.
+2. Fetch dependencies:
+   ```bash
+   flutter pub get
+   ```
+3. Generate Isar code (if you make schema changes):
+   ```bash
+   dart run build_runner build --delete-conflicting-outputs
+   ```
+4. Run the app:
+   ```bash
+   flutter run
+   ```
 
 ## Project structure
 ```
-src/
-  app/App.tsx          # Shell & layout
+lib/
+  main.dart
+  app.dart
+  core/
+    model/place.dart
+    repo/place_repository.dart
   features/
-    map/MapView.tsx    # Kakao map rendering & marker handling
-    places/            # Place list + creation form
-  hooks/useKakaoLoader.ts
-  store/placeStore.ts  # Zustand store for places
-  ui/                  # UI primitives (sheet, modal, FAB)
-  styles/index.css     # Tailwind entry
+    map/map_screen.dart
+    places/places_list_screen.dart
+    place_detail/place_detail_screen.dart
 ```
