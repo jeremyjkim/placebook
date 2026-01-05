@@ -84,7 +84,67 @@ src/
 - ✅ 현재 위치 자동 감지
 - ✅ IndexedDB를 사용한 로컬 저장
 
+## Vercel 배포
+
+### 1. GitHub에 코드 푸시 (선택사항)
+
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin <your-repo-url>
+git push -u origin main
+```
+
+### 2. Vercel CLI로 배포
+
+```bash
+# Vercel CLI 설치 (전역)
+npm install -g vercel
+
+# web 폴더로 이동
+cd web
+
+# 배포
+vercel
+
+# 프로덕션 배포
+vercel --prod
+```
+
+### 3. Vercel 웹 대시보드로 배포
+
+1. https://vercel.com 접속 및 로그인
+2. "Add New Project" 클릭
+3. GitHub 저장소 선택 (또는 GitLab, Bitbucket)
+4. 프로젝트 설정:
+   - **Framework Preset**: Vite
+   - **Root Directory**: `web` (또는 루트에 있다면 `.`)
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+   - **Install Command**: `npm install`
+5. Environment Variables 추가:
+   - **Key**: `VITE_KAKAO_APP_KEY`
+   - **Value**: Kakao JavaScript 키
+6. "Deploy" 클릭
+
+### 4. 환경 변수 설정
+
+Vercel 대시보드에서:
+1. 프로젝트 선택
+2. Settings → Environment Variables
+3. `VITE_KAKAO_APP_KEY` 추가
+4. 프로덕션, 프리뷰, 개발 환경 모두에 적용
+
+### 5. 도메인 설정
+
+Vercel 대시보드 → Settings → Domains에서 커스텀 도메인을 추가할 수 있습니다.
+
+**중요**: Kakao Developers 콘솔에서 플랫폼 설정에 Vercel 배포 URL을 추가해야 합니다:
+- 예: `https://your-app.vercel.app`
+
 ## 참고사항
 
 - 데이터는 브라우저의 IndexedDB에 저장되므로 브라우저를 변경하거나 데이터를 삭제하면 저장된 장소가 사라집니다.
 - 위치 권한이 필요합니다. 브라우저에서 위치 권한을 허용해주세요.
+- Vercel 배포 후 Kakao Developers 콘솔에서 웹 플랫폼 URL을 업데이트해야 합니다.

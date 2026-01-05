@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useKakaoMap } from '../../hooks/useKakaoMap';
 import { usePlaceStore } from '../../store/placeStore';
+import { BottomNav } from '../../components/BottomNav';
 
 declare global {
   interface Window {
@@ -42,7 +43,6 @@ export function MapScreen() {
         },
         (error) => {
           console.error('Error getting location:', error);
-          // Default to Seoul if location fails (already set in useKakaoMap)
         }
       );
     }
@@ -192,7 +192,7 @@ export function MapScreen() {
 
   const handleSavePlace = async () => {
     if (!selectedPosition || !note.trim() || note.length > 80) {
-      alert('Note must be 1-80 characters.');
+      alert('메모는 1-80자 사이여야 합니다.');
       return;
     }
 
@@ -211,7 +211,7 @@ export function MapScreen() {
       }
       await refreshPlaces();
     } catch (error) {
-      alert('Failed to save place: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert('장소 저장에 실패했습니다: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
@@ -225,36 +225,7 @@ export function MapScreen() {
   };
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header
-        style={{
-          padding: '1rem',
-          backgroundColor: '#14b8a6',
-          color: 'white',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>
-          Placebook
-        </h1>
-        <button
-          onClick={() => navigate('/places')}
-          style={{
-            background: 'none',
-            border: '1px solid white',
-            color: 'white',
-            padding: '0.5rem 1rem',
-            borderRadius: '0.5rem',
-            cursor: 'pointer',
-            fontSize: '1rem',
-          }}
-        >
-          목록
-        </button>
-      </header>
-
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {mapError ? (
         <div
           style={{
@@ -277,132 +248,202 @@ export function MapScreen() {
       )}
 
       {isDialogOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: 'white',
-            padding: '1.5rem',
-            borderTopLeftRadius: '1rem',
-            borderTopRightRadius: '1rem',
-            boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
-            zIndex: 1000,
-            maxHeight: '80vh',
-            overflowY: 'auto',
-          }}
-        >
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={handleCloseDialog}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              zIndex: 1000,
+            }}
+          />
+          {/* Dialog */}
           <div
             style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '1rem',
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: '#ffffff',
+              borderTopLeftRadius: '1.5rem',
+              borderTopRightRadius: '1.5rem',
+              padding: '1.5rem',
+              paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))',
+              boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.15)',
+              zIndex: 1001,
+              maxHeight: '80vh',
+              overflowY: 'auto',
             }}
           >
-            <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
-              새 장소
-            </h2>
-            <button
-              onClick={handleCloseDialog}
+            <div
               style={{
-                background: 'none',
-                border: 'none',
-                fontSize: '1.5rem',
-                cursor: 'pointer',
-                padding: '0.25rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1.5rem',
               }}
             >
-              ×
-            </button>
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {EMOJI_OPTIONS.map((emoji) => (
-                <button
-                  key={emoji}
-                  onClick={() => setSelectedEmoji(emoji)}
-                  style={{
-                    fontSize: '1.5rem',
-                    padding: '0.5rem',
-                    border: `2px solid ${
-                      selectedEmoji === emoji ? '#14b8a6' : '#e5e7eb'
-                    }`,
-                    borderRadius: '0.5rem',
-                    background: selectedEmoji === emoji ? '#f0fdfa' : 'white',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {emoji}
-                </button>
-              ))}
+              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600, color: '#111827' }}>
+                새 장소 추가
+              </h2>
+              <button
+                onClick={handleCloseDialog}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  padding: '0.25rem',
+                  color: '#6b7280',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '0.5rem',
+                }}
+              >
+                ×
+              </button>
             </div>
-          </div>
 
-          <div style={{ marginBottom: '1rem' }}>
-            <label
-              htmlFor="note"
-              style={{
-                display: 'block',
-                marginBottom: '0.5rem',
-                fontWeight: 500,
-              }}
-            >
-              메모
-            </label>
-            <input
-              id="note"
-              type="text"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              maxLength={80}
-              placeholder="한 문장으로 작성"
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '0.75rem',
+                  fontWeight: 500,
+                  color: '#374151',
+                  fontSize: '0.875rem',
+                }}
+              >
+                이모지
+              </label>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                {EMOJI_OPTIONS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => setSelectedEmoji(emoji)}
+                    style={{
+                      fontSize: '2rem',
+                      padding: '0.75rem',
+                      border: `2px solid ${selectedEmoji === emoji ? '#6366f1' : '#e5e7eb'}`,
+                      borderRadius: '0.75rem',
+                      background: selectedEmoji === emoji ? '#f0f0ff' : '#ffffff',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      width: '64px',
+                      height: '64px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label
+                htmlFor="note"
+                style={{
+                  display: 'block',
+                  marginBottom: '0.75rem',
+                  fontWeight: 500,
+                  color: '#374151',
+                  fontSize: '0.875rem',
+                }}
+              >
+                메모
+              </label>
+              <input
+                id="note"
+                type="text"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                maxLength={80}
+                placeholder="이 장소에 대한 짧은 메모를 입력하세요"
+                autoFocus
+                style={{
+                  width: '100%',
+                  padding: '0.875rem 1rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.75rem',
+                  fontSize: '1rem',
+                  boxSizing: 'border-box',
+                  backgroundColor: '#f9fafb',
+                  transition: 'all 0.2s',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#6366f1';
+                  e.target.style.backgroundColor = '#ffffff';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.backgroundColor = '#f9fafb';
+                }}
+              />
+              <div
+                style={{
+                  fontSize: '0.75rem',
+                  color: '#9ca3af',
+                  marginTop: '0.5rem',
+                  textAlign: 'right',
+                }}
+              >
+                {note.length}/80
+              </div>
+            </div>
+
+            <button
+              onClick={handleSavePlace}
               style={{
                 width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.5rem',
+                padding: '1rem',
+                backgroundColor: '#6366f1',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '0.75rem',
                 fontSize: '1rem',
-                boxSizing: 'border-box',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'background-color 0.2s',
+                boxShadow: '0 2px 4px rgba(99, 102, 241, 0.2)',
               }}
-            />
-            <div style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem' }}>
-              {note.length}/80
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#4f46e5';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#6366f1';
+              }}
+            >
+              저장하기
+            </button>
+
+            <div
+              style={{
+                marginTop: '1rem',
+                fontSize: '0.75rem',
+                color: '#9ca3af',
+                textAlign: 'center',
+              }}
+            >
+              {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+                ? '맵을 길게 눌러 위치를 변경할 수 있습니다'
+                : '맵에서 우클릭하여 위치를 변경할 수 있습니다'}
             </div>
           </div>
-
-          <button
-            onClick={handleSavePlace}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              backgroundColor: '#14b8a6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.5rem',
-              fontSize: '1rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            저장
-          </button>
-
-          <div
-            style={{
-              marginTop: '1rem',
-              fontSize: '0.875rem',
-              color: '#6b7280',
-            }}
-          >
-            {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-              ? '맵을 길게 눌러(롱프레스) 핀 위치를 변경할 수 있습니다.'
-              : '맵에서 우클릭하여 핀 위치를 변경할 수 있습니다.'}
-          </div>
-        </div>
+        </>
       )}
+
+      <BottomNav />
     </div>
   );
 }
