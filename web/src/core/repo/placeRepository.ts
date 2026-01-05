@@ -42,11 +42,12 @@ class PlaceRepository {
     latitude: number,
     longitude: number,
     emoji: string,
-    note: string
+    note: string,
+    folderName?: string
   ): Promise<number> {
     return new Promise((resolve, reject) => {
       const store = this.getStore('readwrite');
-      const placeData = createPlace(latitude, longitude, emoji, note);
+      const placeData = createPlace(latitude, longitude, emoji, note, folderName);
       // id 필드를 제외 - IndexedDB의 autoIncrement가 자동으로 생성
       const place: Omit<Place, 'id'> & { createdAt: Date } = {
         ...placeData,
@@ -100,6 +101,30 @@ class PlaceRepository {
           ...place,
           createdAt: new Date(place.createdAt),
         });
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async deletePlace(id: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const store = this.getStore('readwrite');
+      const request = store.delete(id);
+
+      request.onsuccess = () => {
+        resolve();
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async updatePlace(place: Place): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const store = this.getStore('readwrite');
+      const request = store.put(place);
+
+      request.onsuccess = () => {
+        resolve();
       };
       request.onerror = () => reject(request.error);
     });

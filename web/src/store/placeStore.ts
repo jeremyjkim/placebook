@@ -12,9 +12,12 @@ interface PlaceStore {
     latitude: number,
     longitude: number,
     emoji: string,
-    note: string
+    note: string,
+    folderName?: string
   ) => Promise<void>;
   getPlace: (id: number) => Promise<Place | null>;
+  deletePlace: (id: number) => Promise<void>;
+  updatePlace: (place: Place) => Promise<void>;
 }
 
 export const usePlaceStore = create<PlaceStore>((set, get) => ({
@@ -48,10 +51,11 @@ export const usePlaceStore = create<PlaceStore>((set, get) => ({
     latitude: number,
     longitude: number,
     emoji: string,
-    note: string
+    note: string,
+    folderName?: string
   ) => {
     try {
-      await placeRepository.addPlace(latitude, longitude, emoji, note);
+      await placeRepository.addPlace(latitude, longitude, emoji, note, folderName);
       await get().refreshPlaces();
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Unknown error' });
@@ -65,6 +69,26 @@ export const usePlaceStore = create<PlaceStore>((set, get) => ({
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Unknown error' });
       return null;
+    }
+  },
+
+  deletePlace: async (id: number) => {
+    try {
+      await placeRepository.deletePlace(id);
+      await get().refreshPlaces();
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Unknown error' });
+      throw error;
+    }
+  },
+
+  updatePlace: async (place: Place) => {
+    try {
+      await placeRepository.updatePlace(place);
+      await get().refreshPlaces();
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Unknown error' });
+      throw error;
     }
   },
 }));

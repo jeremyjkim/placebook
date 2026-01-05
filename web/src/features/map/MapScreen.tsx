@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useKakaoMap } from '../../hooks/useKakaoMap';
 import { usePlaceStore } from '../../store/placeStore';
-import { BottomNav } from '../../components/BottomNav';
+import { SearchHeader } from '../../components/SearchHeader';
+import { SideNav } from '../../components/SideNav';
 import { getEmojiImageUrl } from '../../utils/emojiToImage';
 
 declare global {
@@ -18,6 +19,7 @@ export function MapScreen() {
   const { map, isLoaded, error: mapError } = useKakaoMap('map', { lat: 37.5665, lng: 126.978 });
   const { places, addPlace, refreshPlaces } = usePlaceStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSideNavOpen, setIsSideNavOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedPosition, setSelectedPosition] = useState<{
     lat: number;
@@ -25,6 +27,7 @@ export function MapScreen() {
   } | null>(null);
   const [selectedEmoji, setSelectedEmoji] = useState(EMOJI_OPTIONS[0]);
   const [note, setNote] = useState('');
+  const [folderName, setFolderName] = useState('');
   const markersRef = useRef<any[]>([]);
   const currentLocationMarkerRef = useRef<any>(null);
   const tempMarkerRef = useRef<any>(null);
@@ -160,6 +163,7 @@ export function MapScreen() {
     setSelectedPosition({ lat, lng });
     setIsDialogOpen(true);
     setNote('');
+    setFolderName('');
     setSelectedEmoji(EMOJI_OPTIONS[0]);
 
     // Show temporary marker
@@ -269,10 +273,12 @@ export function MapScreen() {
         selectedPosition.lat,
         selectedPosition.lng,
         selectedEmoji,
-        note.trim()
+        note.trim(),
+        folderName.trim() || undefined
       );
       setIsDialogOpen(false);
       setSelectedPosition(null);
+      setFolderName('');
       if (tempMarkerRef.current) {
         tempMarkerRef.current.setMap(null);
         tempMarkerRef.current = null;
@@ -286,6 +292,7 @@ export function MapScreen() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setSelectedPosition(null);
+    setFolderName('');
     if (tempMarkerRef.current) {
       tempMarkerRef.current.setMap(null);
       tempMarkerRef.current = null;
@@ -294,74 +301,80 @@ export function MapScreen() {
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
-      {mapError ? (
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '2rem',
-            color: '#ef4444',
-          }}
-        >
-          <p style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>
-            지도를 불러올 수 없습니다
-          </p>
-          <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>{mapError}</p>
-        </div>
-      ) : (
-        <>
-          <div id="map" style={{ flex: 1, width: '100%', minHeight: 0 }}></div>
-          
-          {/* 현재 위치로 이동하는 플로팅 버튼 */}
-          {currentLocation && (
-            <button
-              onClick={handleMoveToCurrentLocation}
-              style={{
-                position: 'absolute',
-                bottom: 'calc(80px + 1rem)',
-                right: '1rem',
-                width: '48px',
-                height: '48px',
-                borderRadius: '50%',
-                backgroundColor: '#ffffff',
-                border: 'none',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 500,
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-              }}
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#6366f1"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+      <SearchHeader 
+        onMenuClick={() => setIsSideNavOpen(true)}
+      />
+      <SideNav isOpen={isSideNavOpen} onClose={() => setIsSideNavOpen(false)} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, position: 'relative' }}>
+        {mapError ? (
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '2rem',
+              color: '#ef4444',
+            }}
+          >
+            <p style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>
+              지도를 불러올 수 없습니다
+            </p>
+            <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>{mapError}</p>
+          </div>
+        ) : (
+          <>
+            <div id="map" style={{ flex: 1, width: '100%', minHeight: 0 }}></div>
+            
+            {/* 현재 위치로 이동하는 플로팅 버튼 */}
+            {currentLocation && (
+              <button
+                onClick={handleMoveToCurrentLocation}
+                style={{
+                  position: 'absolute',
+                  bottom: '1rem',
+                  right: '1rem',
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  backgroundColor: '#ffffff',
+                  border: 'none',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 500,
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+                }}
               >
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-            </button>
-          )}
-        </>
-      )}
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#6366f1"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+              </button>
+            )}
+          </>
+        )}
+      </div>
 
       {isDialogOpen && (
         <>
@@ -518,6 +531,46 @@ export function MapScreen() {
               </div>
             </div>
 
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label
+                htmlFor="folderName"
+                style={{
+                  display: 'block',
+                  marginBottom: '0.75rem',
+                  fontWeight: 500,
+                  color: '#374151',
+                  fontSize: '0.875rem',
+                }}
+              >
+                폴더 (선택사항)
+              </label>
+              <input
+                id="folderName"
+                type="text"
+                value={folderName}
+                onChange={(e) => setFolderName(e.target.value)}
+                placeholder="예: 맛집, 여행지, 카페"
+                style={{
+                  width: '100%',
+                  padding: '0.875rem 1rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.75rem',
+                  fontSize: '1rem',
+                  boxSizing: 'border-box',
+                  backgroundColor: '#f9fafb',
+                  transition: 'all 0.2s',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#6366f1';
+                  e.target.style.backgroundColor = '#ffffff';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#d1d5db';
+                  e.target.style.backgroundColor = '#f9fafb';
+                }}
+              />
+            </div>
+
             <button
               onClick={handleSavePlace}
               style={{
@@ -558,8 +611,6 @@ export function MapScreen() {
           </div>
         </>
       )}
-
-      <BottomNav />
     </div>
   );
 }

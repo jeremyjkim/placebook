@@ -1,12 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlaceStore } from '../../store/placeStore';
-import { Header } from '../../components/Header';
-import { BottomNav } from '../../components/BottomNav';
+import { SearchHeader } from '../../components/SearchHeader';
+import { SideNav } from '../../components/SideNav';
 
 export function PlacesListScreen() {
   const navigate = useNavigate();
   const { places, isLoading, refreshPlaces } = usePlaceStore();
+  const [isSideNavOpen, setIsSideNavOpen] = useState(false);
 
   useEffect(() => {
     refreshPlaces();
@@ -23,14 +24,16 @@ export function PlacesListScreen() {
         backgroundColor: '#f9fafb',
       }}
     >
-      <Header title="저장된 장소" />
+      <SearchHeader 
+        onMenuClick={() => setIsSideNavOpen(true)}
+      />
+      <SideNav isOpen={isSideNavOpen} onClose={() => setIsSideNavOpen(false)} />
       
       <div
         style={{
           flex: 1,
           overflowY: 'auto',
           padding: '1rem',
-          paddingBottom: 'calc(80px + 1rem)',
         }}
       >
         {isLoading ? (
@@ -201,8 +204,6 @@ export function PlacesListScreen() {
           </div>
         )}
       </div>
-
-      <BottomNav />
     </div>
   );
 }
