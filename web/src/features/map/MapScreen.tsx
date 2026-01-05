@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useKakaoMap } from '../../hooks/useKakaoMap';
 import { usePlaceStore } from '../../store/placeStore';
 import { BottomNav } from '../../components/BottomNav';
+import { getEmojiImageUrl } from '../../utils/emojiToImage';
 
 declare global {
   interface Window {
@@ -17,6 +18,7 @@ export function MapScreen() {
   const { map, isLoaded, error: mapError } = useKakaoMap('map', { lat: 37.5665, lng: 126.978 });
   const { places, addPlace, refreshPlaces } = usePlaceStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedPosition, setSelectedPosition] = useState<{
     lat: number;
     lng: number;
@@ -24,9 +26,10 @@ export function MapScreen() {
   const [selectedEmoji, setSelectedEmoji] = useState(EMOJI_OPTIONS[0]);
   const [note, setNote] = useState('');
   const markersRef = useRef<any[]>([]);
+  const currentLocationMarkerRef = useRef<any>(null);
   const tempMarkerRef = useRef<any>(null);
 
-  // Get current location
+  // Get current location (저장만 하고 이동하지 않음)
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -35,20 +38,57 @@ export function MapScreen() {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           };
-          if (map && window.kakao) {
-            const moveLatLon = new window.kakao.maps.LatLng(pos.lat, pos.lng);
-            map.setCenter(moveLatLon);
-            map.setLevel(4);
-          }
+          setCurrentLocation(pos);
         },
         (error) => {
           console.error('Error getting location:', error);
         }
       );
     }
-  }, [map]);
+  }, []);
 
-  // Add markers for saved places
+  // 현재 위치 마커 생성
+  useEffect(() => {
+    if (!map || !isLoaded || !window.kakao || !currentLocation) return;
+
+    // 기존 현재 위치 마커 제거
+    if (currentLocationMarkerRef.current) {
+      currentLocationMarkerRef.current.setMap(null);
+    }
+
+    // 현재 위치 마커 생성 (파란색 원형)
+    const markerPosition = new window.kakao.maps.LatLng(
+      currentLocation.lat,
+      currentLocation.lng
+    );
+
+    // 커스텀 오버레이로 현재 위치 마커 생성
+    const content = document.createElement('div');
+    content.style.cssText = `
+      width: 20px;
+      height: 20px;
+      background: #3b82f6;
+      border: 3px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    `;
+
+    currentLocationMarkerRef.current = new window.kakao.maps.CustomOverlay({
+      position: markerPosition,
+      content: content,
+      yAnchor: 0.5,
+    });
+
+    currentLocationMarkerRef.current.setMap(map);
+
+    return () => {
+      if (currentLocationMarkerRef.current) {
+        currentLocationMarkerRef.current.setMap(null);
+      }
+    };
+  }, [map, isLoaded, currentLocation]);
+
+  // Add markers for saved places (이모지 이미지 사용)
   useEffect(() => {
     if (!map || !isLoaded || !window.kakao) return;
 
@@ -62,13 +102,26 @@ export function MapScreen() {
         place.latitude,
         place.longitude
       );
+
+      // 이모지를 이미지로 변환
+      const imageUrl = getEmojiImageUrl(place.emoji, 40);
+      const imageSize = new window.kakao.maps.Size(40, 40);
+      const imageOption = { offset: new window.kakao.maps.Point(20, 20) };
+
+      const markerImage = new window.kakao.maps.MarkerImage(
+        imageUrl,
+        imageSize,
+        imageOption
+      );
+
       const marker = new window.kakao.maps.Marker({
         position: markerPosition,
+        image: markerImage,
         map: map,
       });
 
       const infowindow = new window.kakao.maps.InfoWindow({
-        content: `<div style="padding:5px;">${place.emoji} ${place.note}</div>`,
+        content: `<div style="padding:8px 10px; font-size:14px;">${place.emoji} ${place.note}</div>`,
       });
 
       window.kakao.maps.event.addListener(marker, 'click', () => {
@@ -86,6 +139,21 @@ export function MapScreen() {
       markersRef.current.push(marker);
     });
   }, [map, isLoaded, places, navigate]);
+
+  // 현재 위치로 이동하는 함수
+  const handleMoveToCurrentLocation = () => {
+    if (!map || !currentLocation || !window.kakao) {
+      alert('현재 위치를 가져올 수 없습니다.');
+      return;
+    }
+
+    const moveLatLon = new window.kakao.maps.LatLng(
+      currentLocation.lat,
+      currentLocation.lng
+    );
+    map.setCenter(moveLatLon);
+    map.setLevel(4);
+  };
 
   // 장소 추가 핸들러 (공통 함수)
   const handleAddPlaceAtPosition = (lat: number, lng: number) => {
@@ -225,7 +293,7 @@ export function MapScreen() {
   };
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
       {mapError ? (
         <div
           style={{
@@ -244,7 +312,55 @@ export function MapScreen() {
           <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>{mapError}</p>
         </div>
       ) : (
-        <div id="map" style={{ flex: 1, width: '100%', minHeight: 0 }}></div>
+        <>
+          <div id="map" style={{ flex: 1, width: '100%', minHeight: 0 }}></div>
+          
+          {/* 현재 위치로 이동하는 플로팅 버튼 */}
+          {currentLocation && (
+            <button
+              onClick={handleMoveToCurrentLocation}
+              style={{
+                position: 'absolute',
+                bottom: 'calc(80px + 1rem)',
+                right: '1rem',
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: '#ffffff',
+                border: 'none',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 500,
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+              }}
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#6366f1"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+            </button>
+          )}
+        </>
       )}
 
       {isDialogOpen && (
